@@ -2,32 +2,64 @@ name: Backend Tests
 on:
   push:
     branches: [main]
-  pull_request: 
+  pull_request:
     branches: [main]
-  workflow_call: # NOUVEAU : Rend le workflow réutilisable
+  workflow_call:
     
 jobs:
-  test:
+  unit-tests:
+    name: Unit Tests # Premier job : Exécute toujours les tests unitaires
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: 📥 Checkout code
         uses: actions/checkout@v4
       
-      - name: Setup Python 3.11
+      - name: 🐍 Setup Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
-      
-      - name: Install UV
+          
+      - name: 📦 Install UV
         run: pip install uv
-      
-      - name: Install dependencies
-        run: | 
-          cd backend 
-          uv sync 
-      
-      - name: Run tests
-        run: | 
+        
+      - name: 📚 Install dependencies
+        run: |
           cd backend
-          uv run pytest -v --cov
+          uv sync
+          
+      - name: 🧪 Run unit tests only
+        # Exclut les tests marqués comme 'e2e' [cite: 445]
+        run: |
+          cd backend
+          uv run pytest -v -m "not e2e"
+          
+  e2e-tests:
+    name: E2E Tests # Deuxième job : Exécute les tests E2E
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' # ✨ Conditionnel : Seulement sur la branche main [cite: 449, 473]
+    needs: unit-tests # Dépendance : Attend que les tests unitaires aient réussi [cite: 450, 474]
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        
+      - name: 🐍 Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          
+      - name: 📦 Install UV
+        run: pip install uv
+        
+      - name: 📚 Install dependencies
+        run: |
+          cd backend
+          uv sync
+          
+      - name: 🧪 Run E2E tests only
+        # Exécute uniquement les tests marqués comme 'e2e' [cite: 470]
+        run: |
+          cd backend
+          uv run pytest -v -m "e2e"
