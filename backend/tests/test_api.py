@@ -38,7 +38,7 @@ def test_health_check(client):
     response = client.get("/health")
 
     assert response.status_code == 200
-    assert response.json()["status"] == "healthy"
+    assert response.json()["status"] == "BROKEN"
 
 
 def test_create_task(client):
@@ -130,8 +130,27 @@ def test_delete_task(client):
     Astuce : Regardez test_get_task_by_id pour voir comment créer et obtenir l'ID
     """
     # TODO : Écrivez votre test ici !
-    pass
-
+    task = {
+        "tittle": "la tache de oussama",
+        "description" : "wydad better than raja"
+    }
+    new_task = client.post("/tasks",json={"title":"tache de oussama",
+                                          "decription":"wydad better than raja"})
+    task_id = new_task.json()["id"]
+    delete_resp = client.delete(f"/tasks/{task_id}")
+    assert delete_resp.status_code == 204
+    get_resp = client.get(f"/tasks/{task_id}")  
+    assert get_resp.status_code == 404
+    
+def test_delete_nonexistent_task_returns_404(client):
+    """Deleting a task that doesn't exist should return 404."""
+    # TODO: Votre code ici
+    # 1. Essayer de supprimer une tâche avec un ID qui n'existe pas (ex: 9999)
+    # 2. Vérifier que ça retourne 404
+    # 3. Vérifier le message d'erreur contient "not found"
+    delete_task = client.delete("/tasks/1937")
+    assert delete_task.status_code == 404
+    assert "not found" in delete_task.json()["detail"].lower()
 
 # EXERCICE 2 : Écrire un test pour METTRE À JOUR une tâche
 # Pattern : Créer → Mettre à jour → Vérifier les changements
@@ -149,8 +168,11 @@ def test_update_task(client):
     Astuce : Les requêtes PUT sont comme les POST, mais elles modifient des données existantes
     """
     # TODO : Écrivez votre test ici !
-    pass
-
+    new_task = client.post ("/tasks", json={"title":"Titre Original"})
+    task_id = new_task.json()["id"]
+    update_resp = client.put (f"/tasks/{task_id}", json={"title":"Nouveau Titre"})
+    assert update_resp.status_code == 200
+    assert update_resp.json( )["title"] == "Nouveau Titre"
 
 # EXERCICE 3 : Tester la validation - un titre vide devrait échouer
 def test_create_task_empty_title(client):
@@ -164,7 +186,8 @@ def test_create_task_empty_title(client):
     Astuce : Regardez test_create_task, mais attendez-vous à un échec !
     """
     # TODO : Écrivez votre test ici !
-    pass
+    reponse = client.post("/tasks",json={"tittle":""})
+    assert reponse.status_code == 422
 
 
 # EXERCICE 4 : Tester la validation - priorité invalide
@@ -180,7 +203,10 @@ def test_update_task_with_invalid_priority(client):
     Rappel : Les priorités valides sont "low", "medium", "high" (voir TaskPriority dans app.py)
     """
     # TODO : Écrivez votre test ici !
-    pass
+    task = client.post("/tasks",json={"title" : "valide task"})
+    taskID = task.json()["id"]
+    update_resp = client.put (f"/tasks/{taskID}", json={"priority":"urgent"})
+    assert update_resp.status_code == 422
 
 
 # EXERCICE 5 : Tester l'erreur 404
@@ -193,9 +219,21 @@ def test_get_nonexistent_task(client):
     2. Vérifier que le code de statut est 404 (Not Found)
     """
     # TODO : Écrivez votre test ici !
-    pass
+    response = client.get("/tasks/999")
+    assert response.status_code == 404
 
-
+#test de filtrage
+def test_filter_by_multiple_criteria(client):
+    """Filtering by status AND priority should work."""
+    # TODO: Votre code ici
+    # 1. Créer 3 tâches avec différents status et priority
+    # 2. Filtrer avec GET /tasks?status=todo&priority=high
+    # 3. Vérifier qu'on reçoit seulement les bonnes tâches
+    task1 = client.post("/tasks",json={"title":"T1","statut":"todo","priority":"high"})
+    tasl2 = client.post("/tasks",json={"title":"T2","statut":"done","priority":"low"})
+    task3 = client.post("/tasks",json={"title":"T3","statut":"todo","priority":"low"})
+    filter_resp = client.get("/tasks?status=todo&priority=high")
+    assert filter_resp.status_code == 200
 # =============================================================================
 # EXERCICES BONUS (Si vous finissez en avance !)
 # =============================================================================
@@ -211,7 +249,12 @@ def test_filter_tasks_by_status(client):
     3. Vérifier que seule la tâche "done" est retournée
     """
     # TODO : Écrivez votre test ici !
-    pass
+    task1 = client.post("/tasks",json={"title":"T1","status":"todo"})
+    task2 = client.post("/tasks",json={"title":"T2","status":"done"})
+    filter_resp = client.get("/tasks?status=done")
+    assert filter_resp.status_code == 200
+    assert len (filter_resp.json()) == 1
+    assert filter_resp.json()[0]["status"] == "done"
 
 
 # BONUS 2 : Tester la mise à jour d'un seul champ
@@ -225,7 +268,15 @@ def test_update_only_status(client):
     3. Vérifier que le statut a changé MAIS le titre est resté le même
     """
     # TODO : Écrivez votre test ici !
-    pass
+    new_task = client.post ("/tasks", json={"title":"Test","status":"todo"})
+    task_id = new_task.json( )["id"]   
+    update_resp = client.put (f"/tasks/{task_id}", json={"status":"done"})
+    assert update_resp.status_code == 200
+    updated_task = update_resp.json()
+    assert updated_task["status"] == "done"
+    assert updated_task["title"] == "Test"
+
+    
 
 
 # BONUS 3 : Tester le cycle de vie complet d'une tâche
@@ -241,7 +292,17 @@ def test_task_lifecycle(client):
     5. Vérifier qu'elle a disparu (GET devrait retourner 404)
     """
     # TODO : Écrivez votre test ici !
-    pass
+    task = client.post ("/tasks", json={"title":"lifecycle task"})
+    task_id = task.json()["id"]
+    get_resp = client.get (f"/tasks/{task_id}")
+    assert get_resp.status_code == 200
+    update_resp = client.put (f"/tasks/{task_id}", json={"status":"done"})
+    assert update_resp.status_code == 200
+    delete_resp = client.delete (f"/tasks/{task_id}")
+    assert delete_resp.status_code == 204
+    get_resp_after_delete = client.get (f"/tasks/{task_id}")
+    assert get_resp_after_delete.status_code == 404
+    
 
 
 # =============================================================================
