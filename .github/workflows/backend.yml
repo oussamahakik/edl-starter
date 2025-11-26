@@ -1,7 +1,10 @@
 name: Backend Tests
 on:
   push:
+    branches: [main] # Déclencheur pour la branche main
+  pull_request: # NOUVEAU : Déclencheur pour les Pull Requests (pour l'Exercice 4)
     branches: [main]
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -13,23 +16,21 @@ jobs:
       - name: Setup Python 3.11
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'  # Spécifie la version de Python à utiliser [cite: 23]
-          cache: 'pip' # Active le cache pip pour accélérer l'installation des dépendances [cite: 45]
-
-      # 2. Installez UV avec pip (uv est nécessaire pour l'étape suivante)
+          python-version: '3.11'
+          cache: 'pip' # Active le cache automatique
+      
+      # 2. Installez UV avec pip
       - name: Install UV
         run: pip install uv
       
       # 3. Installez les dépendances
       - name: Install dependencies
-        # Utilisation de run: | pour exécuter plusieurs commandes séquentiellement [cite: 116]
         run: | 
           cd backend 
-          uv sync # uv sync installe les dépendances
+          uv sync 
       
       # 4. Lancez les tests
       - name: Run tests
         run: | 
           cd backend
-          # La commande uv run pytest -v --cov est suggérée pour le test local [cite: 124]
           uv run pytest -v --cov

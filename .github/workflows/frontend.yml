@@ -1,7 +1,10 @@
 name: Frontend Tests
 on:
   push:
+    branches: [main] # Déclencheur pour la branche main
+  pull_request: # NOUVEAU : Déclencheur pour les Pull Requests (pour l'Exercice 4)
     branches: [main]
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -9,28 +12,28 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      # 1. Setup Node.js 18 avec cache npm (TODO 1)
+      # 1. Setup Node.js 18 avec cache npm
       - name: Setup Node.js 18
-        uses: actions/setup-node@v4 # Indice 💡
+        uses: actions/setup-node@v4
         with:
-          node-version: '18' # Indice 💡
-          cache: 'npm' # Indice 💡
-          cache-dependency-path: frontend/package-lock.json # Indice 💡
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json # Cache basé sur le lock file
       
-      # 2. Installez les dépendances (TODO 2)
+      # 2. Installez les dépendances
       - name: Install dependencies (npm ci)
         run: | 
           cd frontend
-          npm ci # Utilise npm ci pour une installation déterministe 
+          npm ci # Installation déterministe
       
-      # 3. Lancez les tests (TODO 3)
+      # 3. Lancez les tests
       - name: Run tests
         run: | 
           cd frontend
-          npm test -- --run # Commande de test local 
+          npm test -- --run
 
-      # 4. Vérifiez le build (TODO 4)
+      # 4. Vérifiez le build
       - name: Run build
         run: |
           cd frontend
-          npm run build # Commande de build local 
+          npm run build
