@@ -1,0 +1,23 @@
+name: CI Pipeline
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend:
+    name: Backend Tests
+    uses: ./.github/workflows/backend.yml # Appelle le backend.yml
+    
+  frontend:
+    name: Frontend Tests
+    uses: ./.github/workflows/frontend.yml # Appelle le frontend.yml
+    
+  summary:
+    name: All Tests Passed
+    needs: [backend, frontend] # Attend la réussite du backend ET du frontend [cite: 349, 364]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Success
+        run: echo "🎉 Tous les tests sont passés !"

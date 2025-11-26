@@ -1,10 +1,11 @@
 name: Backend Tests
 on:
   push:
-    branches: [main] # Déclencheur pour la branche main
-  pull_request: # NOUVEAU : Déclencheur pour les Pull Requests (pour l'Exercice 4)
     branches: [main]
-
+  pull_request: 
+    branches: [main]
+  workflow_call: # NOUVEAU : Rend le workflow réutilisable
+    
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -12,24 +13,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      # 1. Setup Python 3.11 avec cache pip
       - name: Setup Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          cache: 'pip' # Active le cache automatique
+          cache: 'pip'
       
-      # 2. Installez UV avec pip
       - name: Install UV
         run: pip install uv
       
-      # 3. Installez les dépendances
       - name: Install dependencies
         run: | 
           cd backend 
           uv sync 
       
-      # 4. Lancez les tests
       - name: Run tests
         run: | 
           cd backend
