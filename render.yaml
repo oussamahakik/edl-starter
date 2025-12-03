@@ -5,7 +5,7 @@ services:
   - type: web
     name: taskflow-backend
     runtime: python
-    region: frankfurt
+    region: ireland  # MODIFIÉ
     plan: free
     # Commandes de build pour le backend
     buildCommand: pip install uv && uv sync
@@ -27,7 +27,7 @@ services:
   - type: static
     name: taskflow-frontend
     runtime: static
-    region: frankfurt
+    region: ireland  # MODIFIÉ
     plan: free
     # Commandes de build pour le frontend
     buildCommand: npm ci && npm run build
