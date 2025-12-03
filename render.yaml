@@ -5,11 +5,9 @@ services:
   - type: web
     name: taskflow-backend
     runtime: python
-    region: ireland  # REGION CONSERVÉE (C'EST UN WEB SERVICE)
+    region: frankfurt # CONSERVER LA RÉGION EU CHOISIE ICI
     plan: free
-    # Commandes de build pour le backend
     buildCommand: pip install uv && uv sync
-    # Commande de démarrage utilisant la variable $PORT
     startCommand: uv run uvicorn src.app:app --host 0.0.0.0 --port $PORT
     rootDir: backend
     envVars:
@@ -22,16 +20,14 @@ services:
 # =================================================================
 # Frontend React (Static Site)
 # =================================================================
-  - type: static          # Type de service statique
+  - type: web # Conserver le type 'web' pour ce service
     name: taskflow-frontend
     runtime: static
-    # X SUPPRIMER: region: ireland  <-- Suppression de cette ligne
+    # LA LIGNE 'region: frankfurt' A ÉTÉ SUPPRIMÉE
     plan: free
-    # Commandes de build pour le frontend
     buildCommand: npm ci && npm run build
     staticPublishPath: ./dist
     rootDir: frontend
     envVars:
-      # L'URL du backend sera injectée ici (VITE_API_URL)
       - key: VITE_API_URL
         sync: false
