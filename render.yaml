@@ -1,0 +1,39 @@
+services:
+# =================================================================
+# Backend FastAPI (Web Service)
+# =================================================================
+  - type: web
+    name: taskflow-backend
+    runtime: python
+    region: frankfurt
+    plan: free
+    # Commandes de build pour le backend
+    buildCommand: pip install uv && uv sync
+    # Commande de démarrage utilisant la variable $PORT
+    startCommand: uv run uvicorn src.app:app --host 0.0.0.0 --port $PORT
+    rootDir: backend
+    envVars:
+      # DATABASE_URL sera configurée manuellement sur Render
+      - key: DATABASE_URL
+        sync: false
+      # CORS_ORIGINS sera configurée manuellement après le déploiement du frontend
+      - key: CORS_ORIGINS
+        sync: false
+    healthCheckPath: /health
+
+# =================================================================
+# Frontend React (Static Site)
+# =================================================================
+  - type: static
+    name: taskflow-frontend
+    runtime: static
+    region: frankfurt
+    plan: free
+    # Commandes de build pour le frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./dist
+    rootDir: frontend
+    envVars:
+      # L'URL du backend sera injectée ici (VITE_API_URL)
+      - key: VITE_API_URL
+        sync: false
