@@ -5,8 +5,8 @@ services:
   - type: web
     name: taskflow-backend
     runtime: python
-    region: frankfurt # CONSERVER LA RÉGION EU CHOISIE ICI
-    plan: free
+    region: frankfurt
+    plan: free # CONSERVÉ : Le type 'web' Python utilise le plan 'free'
     buildCommand: pip install uv && uv sync
     startCommand: uv run uvicorn src.app:app --host 0.0.0.0 --port $PORT
     rootDir: backend
@@ -20,11 +20,10 @@ services:
 # =================================================================
 # Frontend React (Static Site)
 # =================================================================
-  - type: web # Conserver le type 'web' pour ce service
+  - type: web
     name: taskflow-frontend
     runtime: static
-    # LA LIGNE 'region: frankfurt' A ÉTÉ SUPPRIMÉE
-    plan: free
+    # X SUPPRIMER: plan: free <-- RETIRÉ
     buildCommand: npm ci && npm run build
     staticPublishPath: ./dist
     rootDir: frontend
